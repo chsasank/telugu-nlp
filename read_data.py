@@ -41,9 +41,14 @@ class wiki_sentences(object):
 
 
 if __name__ == '__main__':
-    with open("data/all_articles.txt", "w") as myfile:
-        for i, doc in enumerate(doc_generator()):
-            myfile.write(doc)
+    # with open("data/all_articles.txt", "w") as myfile:
+    #     for i, doc in enumerate(doc_generator()):
+    #         myfile.write(doc)
 
-            if i%100 == 0: print("Processed {} articles".format(i))
+    #         if i%100 == 0: print("Processed {} articles".format(i))
+    rext = open('data/all_articles.txt','r').read()
+    text = regex.sub(r'[^\p{InBasic_Latin}\p{Telugu}\p{N}\p{P}\p{C}]',u'', rext)
+    t = regex.sub(r'\p{P}+', '',text)
+    open('data/cleaned.txt','w').write(t)
+
 
