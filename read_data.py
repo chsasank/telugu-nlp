@@ -49,6 +49,7 @@ if __name__ == '__main__':
     rext = open('data/all_articles.txt','r').read()
     text = regex.sub(r'[^\p{InBasic_Latin}\p{Telugu}\p{N}\p{P}\p{C}]',u'', rext)
     t = regex.sub(r'\p{P}+', '',text)
-    open('data/cleaned.txt','w').write(t)
+    open('data/cleaned.txt','w').write(t[:-20000])
+    open('data/cleaned_test.txt','w').write(t[-20000:])
 
 
