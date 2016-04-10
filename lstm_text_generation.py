@@ -14,7 +14,6 @@ from __future__ import print_function
 from keras.models import Sequential
 from keras.layers.core import Dense, Activation, Dropout
 from keras.layers.recurrent import LSTM
-from keras.utils.data_utils import get_file
 import numpy as np
 import random
 import sys
@@ -81,12 +80,20 @@ def sample(a, temperature=1.0):
     a = np.exp(a) / np.sum(np.exp(a))
     return np.argmax(np.random.multinomial(1, a, 1))
 
+
+json_string = model.to_json()
+open('write.json','r').write(json_string)
+
+
 # train the model, output generated text after each iteration
 for iteration in range(1, 60):
+
     print()
     print('-' * 50)
     print('Iteration', iteration)
     model.fit(X, y, batch_size=128, nb_epoch=1)
+
+    model.save_weights('data/my_model_weights.h5')
 
     start_index = random.randint(0, len(text) - maxlen - 1)
 
