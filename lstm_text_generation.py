@@ -27,20 +27,20 @@ except UnicodeDecodeError:
     import codecs
     text = codecs.open(path, encoding='utf-8').read().lower()
 
+text = text[:8983130]
 print('corpus length:', len(text))
 
 chars = set(text)
 chars = regex.sub(r'[^\p{InBasic_Latin}\p{Telugu}\p{N}\p{P}\p{C}]',u'', ''.join(chars))
 chars = sorted(chars)
+chars = chars + ['\u22C6']
 
-n_chars = len(chars)+1
+n_chars = len(chars)
+
 print('total chars:', n_chars)
 
 char_indices = dict((c, i) for i, c in enumerate(chars))
-char_indices['\u22C6'] = len(chars)
-
 indices_char = dict((i, c) for i, c in enumerate(chars))
-indices_char[len(chars)] = '\u22C6'
 
 # cut the text in semi-redundant sequences of maxlen characters
 maxlen = 40
@@ -53,18 +53,18 @@ for i in range(0, len(text) - maxlen, step):
 print('nb sequences:', len(sentences))
 
 print('Vectorization...')
-X = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
-y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
+X = np.zeros((len(sentences), maxlen, n_chars), dtype=np.bool)
+y = np.zeros((len(sentences), n_chars), dtype=np.bool)
 for i, sentence in enumerate(sentences):
     for t, char in enumerate(sentence):
         X[i, t, char_indices.get(char, n_chars-1)] = 1
-    y[i, char_indices[next_chars[i]]] = 1
+    y[i, char_indices.get(next_chars[i], n_chars-1)] = 1
 
 
 # build the model: 2 stacked LSTM
 print('Build model...')
 model = Sequential()
-model.add(LSTM(512, return_sequences=True, input_shape=(maxlen, len(chars))))
+model.add(LSTM(512, return_sequences=True, input_shape=(maxlen, n_chars)))
 model.add(Dropout(0.2))
 model.add(LSTM(512, return_sequences=False))
 model.add(Dropout(0.2))
@@ -82,8 +82,13 @@ def sample(a, temperature=1.0):
 
 
 json_string = model.to_json()
-open('write.json','r').write(json_string)
+open('write.json','w').write(json_string)
 
+try:
+    model.load_weights('data/my_model_weights.h5')
+    print('resuming')
+except:
+   pass
 
 # train the model, output generated text after each iteration
 for iteration in range(1, 60):
@@ -91,9 +96,9 @@ for iteration in range(1, 60):
     print()
     print('-' * 50)
     print('Iteration', iteration)
-    model.fit(X, y, batch_size=128, nb_epoch=1)
+    model.fit(X, y, batch_size=1024, nb_epoch=1)
 
-    model.save_weights('data/my_model_weights.h5')
+    model.save_weights('data/my_model_weights.h5', True)
 
     start_index = random.randint(0, len(text) - maxlen - 1)
 
@@ -110,7 +115,7 @@ for iteration in range(1, 60):
         for i in range(400):
             x = np.zeros((1, maxlen, len(chars)))
             for t, char in enumerate(sentence):
-                x[0, t, char_indices[char]] = 1.
+                x[0, t, char_indices.get(char,n_chars-1)] = 1.
 
             preds = model.predict(x, verbose=0)[0]
             next_index = sample(preds, diversity)
