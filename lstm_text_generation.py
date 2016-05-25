@@ -31,7 +31,7 @@ text = text[:8983130]
 print('corpus length:', len(text))
 
 chars = set(text)
-chars = regex.sub(r'[^\p{InBasic_Latin}\p{Telugu}\p{N}\p{P}\p{C}]',u'', ''.join(chars))
+chars = regex.sub(r'[^\p{InBasic_Latin}\p{Devanagari}\p{N}\p{P}\p{C}]',u'', ''.join(chars))
 chars = sorted(chars)
 chars = chars + ['\u22C6']
 
@@ -44,7 +44,7 @@ indices_char = dict((i, c) for i, c in enumerate(chars))
 
 # cut the text in semi-redundant sequences of maxlen characters
 maxlen = 40
-step = 10
+step = 5
 sentences = []
 next_chars = []
 for i in range(0, len(text) - maxlen, step):
