@@ -44,7 +44,7 @@ char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
 # cut the text in semi-redundant sequences of maxlen characters
-maxlen = 40
+maxlen = 100
 step = 3
 sentences = []
 next_chars = []
@@ -86,7 +86,7 @@ json_string = model.to_json()
 open('write.json','w').write(json_string)
 
 try:
-    model.load_weights('data/my_model_weights.h5')
+    model.load_weights('data/sanskrit_weights.h5')
     print('resuming')
 except:
    pass
@@ -99,7 +99,7 @@ for iteration in range(1, 60):
     print('Iteration', iteration)
     model.fit(X, y, batch_size=1024, nb_epoch=1)
 
-    model.save_weights('data/my_model_weights.h5', True)
+    model.save_weights('data/sanskrit_weights.h5', True)
 
     start_index = random.randint(0, len(text) - maxlen - 1)
 
