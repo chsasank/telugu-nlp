@@ -27,24 +27,25 @@ except UnicodeDecodeError:
     import codecs
     text = codecs.open(path, encoding='utf-8').read().lower()
 
-text = text[:8983130]
+def clean_text(text):
+    t = regex.sub('[\p{N}\p{P}\t ]{4,}', '', text)
+    return t
+
+text = clean_text(text)
+
 print('corpus length:', len(text))
-
 chars = set(text)
-chars = regex.sub(r'[^\p{InBasic_Latin}\p{Devanagari}\p{N}\p{P}\p{C}]',u'', ''.join(chars))
-chars = sorted(chars)
-chars = chars + ['\u22C6']
-
 n_chars = len(chars)
-
 print('total chars:', n_chars)
 
+
+print('total chars:', len(chars))
 char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
 # cut the text in semi-redundant sequences of maxlen characters
 maxlen = 40
-step = 5
+step = 3
 sentences = []
 next_chars = []
 for i in range(0, len(text) - maxlen, step):
@@ -53,12 +54,12 @@ for i in range(0, len(text) - maxlen, step):
 print('nb sequences:', len(sentences))
 
 print('Vectorization...')
-X = np.zeros((len(sentences), maxlen, n_chars), dtype=np.bool)
-y = np.zeros((len(sentences), n_chars), dtype=np.bool)
+X = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
+y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
 for i, sentence in enumerate(sentences):
     for t, char in enumerate(sentence):
-        X[i, t, char_indices.get(char, n_chars-1)] = 1
-    y[i, char_indices.get(next_chars[i], n_chars-1)] = 1
+        X[i, t, char_indices[char]] = 1
+    y[i, char_indices[next_chars[i]]] = 1
 
 
 # build the model: 2 stacked LSTM
